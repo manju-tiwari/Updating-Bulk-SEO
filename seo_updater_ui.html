@@ -1,0 +1,1681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>WP SEO Meta Updater</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:       #080b14;
+    --surface:  #0d1120;
+    --card:     #111827;
+    --card2:    #161d2e;
+    --border:   #1e2a42;
+    --border2:  #243050;
+    --accent:   #3b82f6;
+    --accent2:  #06b6d4;
+    --accent3:  #8b5cf6;
+    --green:    #10b981;
+    --red:      #ef4444;
+    --yellow:   #f59e0b;
+    --text:     #e2e8f0;
+    --text2:    #94a3b8;
+    --text3:    #4b5a72;
+    --glow:     rgba(59,130,246,0.15);
+    --glow2:    rgba(6,182,212,0.12);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Mono', monospace;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── GRID BACKGROUND ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(59,130,246,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(59,130,246,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    top: -40%;
+    left: -20%;
+    width: 70%;
+    height: 70%;
+    background: radial-gradient(ellipse, rgba(59,130,246,0.07) 0%, transparent 65%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app-wrapper {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 36px;
+    height: 68px;
+    background: rgba(13,17,32,0.85);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(12px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 0 20px rgba(59,130,246,0.4);
+    animation: pulse-icon 3s ease-in-out infinite;
+  }
+
+  @keyframes pulse-icon {
+    0%,100% { box-shadow: 0 0 20px rgba(59,130,246,0.4); }
+    50%      { box-shadow: 0 0 30px rgba(59,130,246,0.7), 0 0 60px rgba(59,130,246,0.2); }
+  }
+
+  .logo-text {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 16px;
+    letter-spacing: -0.3px;
+    color: var(--text);
+  }
+
+  .logo-sub {
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-top: 1px;
+  }
+
+  .header-badges {
+    display: flex;
+    gap: 8px;
+  }
+
+  .badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    border: 1px solid;
+  }
+
+  .badge-yoast   { color: #a78bfa; border-color: rgba(167,139,250,0.3); background: rgba(167,139,250,0.06); }
+  .badge-rank    { color: #fb923c; border-color: rgba(251,146,60,0.3);  background: rgba(251,146,60,0.06); }
+  .badge-aio     { color: #34d399; border-color: rgba(52,211,153,0.3);  background: rgba(52,211,153,0.06); }
+
+  /* ── MAIN LAYOUT ── */
+  .main {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 0;
+    flex: 1;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 28px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .sidebar-section {
+    padding: 6px 20px 2px;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text3);
+    font-weight: 500;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-left: 2px solid transparent;
+    color: var(--text2);
+    font-size: 13px;
+    position: relative;
+  }
+
+  .nav-item:hover {
+    background: rgba(59,130,246,0.06);
+    color: var(--text);
+    border-left-color: rgba(59,130,246,0.3);
+  }
+
+  .nav-item.active {
+    background: rgba(59,130,246,0.1);
+    color: var(--accent);
+    border-left-color: var(--accent);
+  }
+
+  .nav-item.active::after {
+    content: '';
+    position: absolute;
+    right: 0; top: 0; bottom: 0;
+    width: 1px;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+  }
+
+  .nav-icon { font-size: 15px; width: 20px; text-align: center; }
+
+  .nav-badge {
+    margin-left: auto;
+    background: var(--accent);
+    color: #fff;
+    font-size: 9px;
+    padding: 2px 7px;
+    border-radius: 10px;
+    font-weight: 700;
+  }
+
+  .sidebar-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 12px 20px;
+  }
+
+  .sidebar-status {
+    margin-top: auto;
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+  }
+
+  .status-dot {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--text2);
+  }
+
+  .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: blink 2s ease-in-out infinite;
+  }
+
+  .dot.idle { background: var(--text3); box-shadow: none; animation: none; }
+
+  @keyframes blink {
+    0%,100% { opacity: 1; }
+    50%      { opacity: 0.3; }
+  }
+
+  /* ── CONTENT AREA ── */
+  .content {
+    padding: 32px 36px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .tab-panel { display: none; flex-direction: column; gap: 24px; }
+  .tab-panel.active { display: flex; animation: fadein 0.3s ease; }
+
+  @keyframes fadein {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── PAGE HEADER ── */
+  .page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+
+  .page-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.5px;
+  }
+
+  .page-title span { color: var(--accent); }
+
+  .page-sub {
+    font-size: 12px;
+    color: var(--text2);
+    margin-top: 4px;
+    line-height: 1.5;
+  }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+
+  .card:hover { border-color: var(--border2); }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(59,130,246,0.3), transparent);
+  }
+
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-title-icon {
+    width: 28px; height: 28px;
+    background: rgba(59,130,246,0.12);
+    border: 1px solid rgba(59,130,246,0.2);
+    border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+  }
+
+  /* ── STATS ROW ── */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+
+  .stat-card {
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+
+  .stat-card:hover { transform: translateY(-2px); border-color: var(--border2); }
+
+  .stat-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .stat-label { font-size: 10px; color: var(--text2); letter-spacing: 1px; text-transform: uppercase; }
+
+  .stat-card.blue  .stat-value { color: var(--accent); }
+  .stat-card.green .stat-value { color: var(--green); }
+  .stat-card.red   .stat-value { color: var(--red); }
+  .stat-card.yel   .stat-value { color: var(--yellow); }
+
+  .stat-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    border-radius: 0 0 12px 12px;
+  }
+
+  .stat-card.blue::after  { background: linear-gradient(90deg, transparent, var(--accent), transparent); }
+  .stat-card.green::after { background: linear-gradient(90deg, transparent, var(--green), transparent); }
+  .stat-card.red::after   { background: linear-gradient(90deg, transparent, var(--red), transparent); }
+  .stat-card.yel::after   { background: linear-gradient(90deg, transparent, var(--yellow), transparent); }
+
+  /* ── FORM ── */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+
+  .form-label {
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text3);
+    font-weight: 500;
+  }
+
+  .form-input {
+    background: #0a0f1e;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    outline: none;
+    transition: all 0.2s;
+    width: 100%;
+  }
+
+  .form-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+  }
+
+  .form-input::placeholder { color: var(--text3); }
+
+  .form-input.pass { letter-spacing: 2px; }
+
+  /* ── PLUGIN SELECTOR ── */
+  .plugin-selector {
+    display: flex;
+    gap: 10px;
+  }
+
+  .plugin-option {
+    flex: 1;
+    padding: 10px 8px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text2);
+    background: #0a0f1e;
+    transition: all 0.2s;
+    user-select: none;
+  }
+
+  .plugin-option:hover { border-color: var(--border2); color: var(--text); }
+
+  .plugin-option.selected.yoast  { border-color: #8b5cf6; color: #a78bfa; background: rgba(139,92,246,0.08); box-shadow: 0 0 12px rgba(139,92,246,0.15); }
+  .plugin-option.selected.rank   { border-color: #f97316; color: #fb923c; background: rgba(249,115,22,0.08);  box-shadow: 0 0 12px rgba(249,115,22,0.15); }
+  .plugin-option.selected.aioseo { border-color: #10b981; color: #34d399; background: rgba(16,185,129,0.08);  box-shadow: 0 0 12px rgba(16,185,129,0.15); }
+
+  .plugin-icon { font-size: 18px; display: block; margin-bottom: 4px; }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(59,130,246,0.3);
+  }
+
+  .btn-primary:hover {
+    background: #2563eb;
+    box-shadow: 0 4px 20px rgba(59,130,246,0.5);
+    transform: translateY(-1px);
+  }
+
+  .btn-secondary {
+    background: rgba(255,255,255,0.06);
+    color: var(--text2);
+    border: 1px solid var(--border);
+  }
+
+  .btn-secondary:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+
+  .btn-danger {
+    background: rgba(239,68,68,0.1);
+    color: var(--red);
+    border: 1px solid rgba(239,68,68,0.25);
+  }
+
+  .btn-danger:hover { background: rgba(239,68,68,0.2); }
+
+  .btn-success {
+    background: linear-gradient(135deg, var(--green), #059669);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(16,185,129,0.3);
+  }
+
+  .btn-success:hover {
+    box-shadow: 0 4px 20px rgba(16,185,129,0.5);
+    transform: translateY(-1px);
+  }
+
+  .btn-success:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .btn-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+  /* ── SITES TABLE ── */
+  .sites-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .sites-table th {
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text3);
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    font-weight: 500;
+  }
+
+  .sites-table td {
+    padding: 13px 14px;
+    font-size: 12px;
+    border-bottom: 1px solid rgba(30,42,66,0.5);
+    color: var(--text2);
+    vertical-align: middle;
+  }
+
+  .sites-table tr:hover td { background: rgba(59,130,246,0.04); color: var(--text); }
+  .sites-table tr:last-child td { border-bottom: none; }
+
+  .site-key-cell {
+    font-family: 'DM Mono', monospace;
+    color: var(--accent2);
+    font-weight: 500;
+  }
+
+  .plugin-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 500;
+    border: 1px solid;
+  }
+
+  .pill-yoast  { color: #a78bfa; border-color: rgba(167,139,250,0.3); background: rgba(167,139,250,0.08); }
+  .pill-rank   { color: #fb923c; border-color: rgba(251,146,60,0.3);  background: rgba(251,146,60,0.08); }
+  .pill-aioseo { color: #34d399; border-color: rgba(52,211,153,0.3);  background: rgba(52,211,153,0.08); }
+
+  .conn-dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+    margin-right: 6px;
+  }
+
+  .action-btns { display: flex; gap: 6px; }
+
+  .icon-btn {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    font-size: 12px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+
+  .icon-btn:hover.edit  { border-color: var(--accent); color: var(--accent); background: rgba(59,130,246,0.1); }
+  .icon-btn:hover.del   { border-color: var(--red);    color: var(--red);    background: rgba(239,68,68,0.1); }
+  .icon-btn:hover.test  { border-color: var(--green);  color: var(--green);  background: rgba(16,185,129,0.1); }
+
+  /* ── FILE UPLOAD ── */
+  .file-drop {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 36px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: rgba(59,130,246,0.02);
+    position: relative;
+  }
+
+  .file-drop:hover, .file-drop.dragover {
+    border-color: var(--accent);
+    background: rgba(59,130,246,0.06);
+    box-shadow: 0 0 30px rgba(59,130,246,0.08);
+  }
+
+  .file-drop input[type=file] {
+    position: absolute; inset: 0;
+    opacity: 0; cursor: pointer;
+    width: 100%; height: 100%;
+  }
+
+  .file-icon { font-size: 36px; margin-bottom: 12px; }
+
+  .file-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .file-sub { font-size: 11px; color: var(--text2); }
+
+  .file-selected {
+    display: none;
+    align-items: center;
+    gap: 12px;
+    background: rgba(16,185,129,0.08);
+    border: 1px solid rgba(16,185,129,0.25);
+    border-radius: 10px;
+    padding: 14px 18px;
+  }
+
+  .file-selected.show { display: flex; }
+
+  .file-selected-icon { font-size: 22px; }
+
+  .file-selected-name {
+    font-size: 13px;
+    color: var(--green);
+    font-weight: 500;
+    flex: 1;
+  }
+
+  .file-selected-size { font-size: 10px; color: var(--text2); }
+
+  /* ── PROGRESS ── */
+  .progress-wrap { margin-top: 4px; }
+
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .progress-label {
+    font-size: 11px;
+    color: var(--text2);
+  }
+
+  .progress-pct {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .progress-track {
+    height: 6px;
+    background: var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+    width: 0%;
+    transition: width 0.4s ease;
+    box-shadow: 0 0 10px rgba(59,130,246,0.5);
+    position: relative;
+  }
+
+  .progress-bar::after {
+    content: '';
+    position: absolute;
+    right: 0; top: 0; bottom: 0;
+    width: 20px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4));
+    animation: shimmer 1.2s linear infinite;
+  }
+
+  @keyframes shimmer {
+    0% { opacity: 0; }
+    50% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  /* ── LOG TERMINAL ── */
+  .terminal {
+    background: #050810;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .terminal-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .term-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .term-dot.r { background: #ef4444; }
+  .term-dot.y { background: #f59e0b; }
+  .term-dot.g { background: #10b981; }
+
+  .terminal-title {
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 1px;
+    margin-left: 4px;
+    text-transform: uppercase;
+  }
+
+  .terminal-body {
+    padding: 16px;
+    height: 280px;
+    overflow-y: auto;
+    font-size: 11.5px;
+    line-height: 1.7;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .terminal-body::-webkit-scrollbar { width: 4px; }
+  .terminal-body::-webkit-scrollbar-track { background: transparent; }
+  .terminal-body::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+
+  .log-line { display: flex; gap: 10px; }
+  .log-time { color: var(--text3); flex-shrink: 0; }
+  .log-ok   { color: var(--green); }
+  .log-err  { color: var(--red); }
+  .log-warn { color: var(--yellow); }
+  .log-info { color: var(--accent2); }
+  .log-dim  { color: var(--text3); }
+
+  /* ── CSV PREVIEW ── */
+  .csv-preview {
+    overflow-x: auto;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+
+  .csv-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+  }
+
+  .csv-table th {
+    background: var(--surface);
+    color: var(--accent);
+    padding: 9px 14px;
+    text-align: left;
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  .csv-table td {
+    padding: 9px 14px;
+    border-bottom: 1px solid rgba(30,42,66,0.4);
+    color: var(--text2);
+    white-space: nowrap;
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .csv-table tr:last-child td { border-bottom: none; }
+  .csv-table tr:hover td { background: rgba(59,130,246,0.04); color: var(--text); }
+
+  /* ── NOTIFICATION ── */
+  .notification {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    padding: 14px 20px;
+    border-radius: 10px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 999;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.35s cubic-bezier(.34,1.56,.64,1);
+    max-width: 340px;
+    border: 1px solid;
+    backdrop-filter: blur(10px);
+  }
+
+  .notification.show { transform: translateY(0); opacity: 1; }
+  .notification.success { background: rgba(16,185,129,0.15); border-color: rgba(16,185,129,0.35); color: var(--green); }
+  .notification.error   { background: rgba(239,68,68,0.15);  border-color: rgba(239,68,68,0.35);  color: var(--red); }
+  .notification.info    { background: rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.35); color: var(--accent); }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text3);
+  }
+
+  .empty-state-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.4; }
+  .empty-state-text { font-size: 12px; line-height: 1.6; }
+
+  /* ── SCROLLBAR ── */
+  .content::-webkit-scrollbar { width: 4px; }
+  .content::-webkit-scrollbar-track { background: transparent; }
+  .content::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+
+  /* ── SEPARATOR ── */
+  .sep { height: 1px; background: var(--border); margin: 4px 0; }
+
+  /* ── TOOLTIP ── */
+  .hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: rgba(6,182,212,0.08);
+    border: 1px solid rgba(6,182,212,0.2);
+    border-radius: 8px;
+    font-size: 11px;
+    color: var(--accent2);
+    line-height: 1.5;
+  }
+
+  .spinner {
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.2);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: inline-block;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── RUN SECTION GRID ── */
+  .run-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+</style>
+</head>
+<body>
+<div class="app-wrapper">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">
+      <div class="logo-icon">⚡</div>
+      <div>
+        <div class="logo-text">WP SEO Meta Updater</div>
+        <div class="logo-sub">Multi-Site Automation Tool</div>
+      </div>
+    </div>
+    <div class="header-badges">
+      <span class="badge badge-yoast">Yoast SEO</span>
+      <span class="badge badge-rank">Rank Math</span>
+      <span class="badge badge-aio">All in One SEO</span>
+    </div>
+  </header>
+
+  <div class="main">
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar">
+      <div class="sidebar-section">Navigation</div>
+
+      <div class="nav-item active" onclick="switchTab('dashboard', this)">
+        <span class="nav-icon">📊</span> Dashboard
+      </div>
+      <div class="nav-item" onclick="switchTab('sites', this)">
+        <span class="nav-icon">🌐</span> Manage Sites
+        <span class="nav-badge" id="sites-count">3</span>
+      </div>
+      <div class="nav-item" onclick="switchTab('updater', this)">
+        <span class="nav-icon">🚀</span> Run Updater
+      </div>
+      <div class="nav-item" onclick="switchTab('log', this)">
+        <span class="nav-icon">📋</span> Activity Log
+      </div>
+
+      <div class="sidebar-divider"></div>
+
+      <div class="sidebar-section">Help</div>
+      <div class="nav-item" onclick="switchTab('guide', this)">
+        <span class="nav-icon">📖</span> CSV Format Guide
+      </div>
+
+      <div class="sidebar-status">
+        <div class="status-dot" id="status-indicator">
+          <div class="dot idle" id="status-dot"></div>
+          <span id="status-text">Idle</span>
+        </div>
+      </div>
+    </nav>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+      <!-- ── DASHBOARD ── -->
+      <div class="tab-panel active" id="tab-dashboard">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Dashboard <span>Overview</span></div>
+            <div class="page-sub">Monitor your multi-site SEO update operations</div>
+          </div>
+          <button class="btn btn-primary" onclick="switchTab('updater', document.querySelector('.nav-item:nth-child(4)'))">
+            ▶ &nbsp;Start New Update
+          </button>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-card blue">
+            <div class="stat-value" id="stat-total">0</div>
+            <div class="stat-label">Total Updated</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-value" id="stat-success">0</div>
+            <div class="stat-label">Successful</div>
+          </div>
+          <div class="stat-card red">
+            <div class="stat-value" id="stat-failed">0</div>
+            <div class="stat-label">Failed</div>
+          </div>
+          <div class="stat-card yel">
+            <div class="stat-value" id="stat-sites">3</div>
+            <div class="stat-label">Sites Connected</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <div class="card-title-icon">🌐</div>
+            Connected Sites
+          </div>
+          <table class="sites-table" id="dashboard-sites-table">
+            <thead>
+              <tr>
+                <th>Site Key</th>
+                <th>URL</th>
+                <th>SEO Plugin</th>
+                <th>Status</th>
+                <th>Last Updated</th>
+              </tr>
+            </thead>
+            <tbody id="dashboard-tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <div class="card-title-icon">📋</div>
+            Recent Activity
+          </div>
+          <div class="terminal">
+            <div class="terminal-header">
+              <div class="term-dot r"></div>
+              <div class="term-dot y"></div>
+              <div class="term-dot g"></div>
+              <div class="terminal-title">activity-log.txt</div>
+            </div>
+            <div class="terminal-body" id="dashboard-log">
+              <div class="log-line"><span class="log-dim">—</span> <span class="log-info">Welcome to WP SEO Meta Updater</span></div>
+              <div class="log-line"><span class="log-dim">—</span> <span class="log-dim">Add your WordPress sites in the "Manage Sites" tab</span></div>
+              <div class="log-line"><span class="log-dim">—</span> <span class="log-dim">Then upload a CSV/Excel file and click "Run Updater"</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── MANAGE SITES ── -->
+      <div class="tab-panel" id="tab-sites">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Manage <span>Sites</span></div>
+            <div class="page-sub">Add your WordPress websites and configure their SEO plugin</div>
+          </div>
+        </div>
+
+        <!-- Add site form -->
+        <div class="card">
+          <div class="card-title">
+            <div class="card-title-icon">➕</div>
+            <span id="form-title-label">Add New Site</span>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Site Key</label>
+              <input class="form-input" id="f-key" placeholder="site1" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">WordPress URL</label>
+              <input class="form-input" id="f-url" placeholder="https://yoursite.com" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Username</label>
+              <input class="form-input" id="f-user" placeholder="admin" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Application Password</label>
+              <input class="form-input pass" id="f-pass" type="password" placeholder="AbCd EfGh IjKl MnOp" />
+            </div>
+            <div class="form-group full">
+              <label class="form-label">SEO Plugin</label>
+              <div class="plugin-selector">
+                <div class="plugin-option selected yoast" onclick="selectPlugin(this,'yoast')">
+                  <span class="plugin-icon">🟣</span> Yoast SEO
+                </div>
+                <div class="plugin-option" onclick="selectPlugin(this,'rankmath')">
+                  <span class="plugin-icon">🟠</span> Rank Math
+                </div>
+                <div class="plugin-option" onclick="selectPlugin(this,'aioseo')">
+                  <span class="plugin-icon">🟢</span> All in One SEO
+                </div>
+              </div>
+              <input type="hidden" id="f-plugin" value="yoast" />
+            </div>
+          </div>
+
+          <div class="btn-row" style="margin-top:20px;">
+            <button class="btn btn-primary" onclick="saveSite()">💾 &nbsp;Save Site</button>
+            <button class="btn btn-secondary" onclick="testConnection()">🔍 &nbsp;Test Connection</button>
+            <button class="btn btn-secondary" onclick="clearForm()">✖ &nbsp;Clear</button>
+            <span id="form-status" style="font-size:12px; margin-left:auto;"></span>
+          </div>
+        </div>
+
+        <!-- Sites table -->
+        <div class="card">
+          <div class="card-title">
+            <div class="card-title-icon">📋</div>
+            Configured Sites
+          </div>
+          <table class="sites-table" id="sites-table">
+            <thead>
+              <tr>
+                <th>Site Key</th>
+                <th>URL</th>
+                <th>SEO Plugin</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="sites-tbody">
+              <tr><td colspan="5"><div class="empty-state"><div class="empty-state-icon">🌐</div><div class="empty-state-text">No sites added yet.<br>Fill the form above to add your first WordPress site.</div></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── RUN UPDATER ── -->
+      <div class="tab-panel" id="tab-updater">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Run <span>Updater</span></div>
+            <div class="page-sub">Upload your CSV or Excel file and update SEO meta across all sites</div>
+          </div>
+        </div>
+
+        <div class="hint">
+          💡 &nbsp;Required columns: <strong>site_key &nbsp;|&nbsp; post_id &nbsp;|&nbsp; post_type &nbsp;|&nbsp; meta_title &nbsp;|&nbsp; meta_description</strong>
+        </div>
+
+        <div class="run-grid">
+          <!-- Left: file + progress -->
+          <div style="display:flex; flex-direction:column; gap:20px;">
+            <div class="card">
+              <div class="card-title"><div class="card-title-icon">📂</div> Select File</div>
+
+              <div class="file-drop" id="file-drop" ondragover="handleDrag(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+                <input type="file" id="file-input" accept=".csv,.xlsx,.xls" onchange="handleFile(this)" />
+                <div class="file-icon">📊</div>
+                <div class="file-title">Drop your CSV or Excel file here</div>
+                <div class="file-sub">or click to browse · .csv / .xlsx / .xls</div>
+              </div>
+
+              <div class="file-selected" id="file-selected">
+                <div class="file-selected-icon">✅</div>
+                <div>
+                  <div class="file-selected-name" id="file-name">—</div>
+                  <div class="file-selected-size" id="file-size">—</div>
+                </div>
+                <button class="btn btn-secondary" style="padding:6px 12px; font-size:11px;" onclick="clearFile()">Remove</button>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-title"><div class="card-title-icon">⚙️</div> Progress</div>
+              <div class="progress-wrap">
+                <div class="progress-header">
+                  <span class="progress-label" id="prog-label">Ready to start</span>
+                  <span class="progress-pct" id="prog-pct">0%</span>
+                </div>
+                <div class="progress-track">
+                  <div class="progress-bar" id="progress-bar"></div>
+                </div>
+              </div>
+              <div class="stats-row" style="margin-top:16px; grid-template-columns: repeat(4,1fr);">
+                <div class="stat-card blue"  style="padding:12px 10px;">
+                  <div class="stat-value" style="font-size:22px;" id="run-total">0</div>
+                  <div class="stat-label">Total</div>
+                </div>
+                <div class="stat-card green" style="padding:12px 10px;">
+                  <div class="stat-value" style="font-size:22px;" id="run-ok">0</div>
+                  <div class="stat-label">OK</div>
+                </div>
+                <div class="stat-card red"   style="padding:12px 10px;">
+                  <div class="stat-value" style="font-size:22px;" id="run-fail">0</div>
+                  <div class="stat-label">Failed</div>
+                </div>
+                <div class="stat-card yel"   style="padding:12px 10px;">
+                  <div class="stat-value" style="font-size:22px;" id="run-skip">0</div>
+                  <div class="stat-label">Skipped</div>
+                </div>
+              </div>
+              <div class="btn-row" style="margin-top:18px;">
+                <button class="btn btn-success" id="run-btn" onclick="startUpdate()">▶ &nbsp;Start Update</button>
+                <button class="btn btn-danger"  id="stop-btn" onclick="stopUpdate()" style="display:none;">⏹ &nbsp;Stop</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: live terminal -->
+          <div class="card" style="display:flex; flex-direction:column;">
+            <div class="card-title"><div class="card-title-icon">📟</div> Live Feed</div>
+            <div class="terminal" style="flex:1;">
+              <div class="terminal-header">
+                <div class="term-dot r"></div>
+                <div class="term-dot y"></div>
+                <div class="term-dot g"></div>
+                <div class="terminal-title">live-output</div>
+              </div>
+              <div class="terminal-body" id="live-log">
+                <div class="log-line"><span class="log-dim">$</span> <span class="log-info">Waiting for input...</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CSV Preview -->
+        <div class="card" id="csv-preview-card" style="display:none;">
+          <div class="card-title"><div class="card-title-icon">👁️</div> File Preview</div>
+          <div class="csv-preview">
+            <table class="csv-table" id="csv-table">
+              <thead id="csv-thead"></thead>
+              <tbody id="csv-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── LOG ── -->
+      <div class="tab-panel" id="tab-log">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Activity <span>Log</span></div>
+            <div class="page-sub">Complete history of all update operations</div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-secondary" onclick="saveLog()">💾 &nbsp;Save Log</button>
+            <button class="btn btn-danger"    onclick="clearLog()">🗑 &nbsp;Clear</button>
+          </div>
+        </div>
+        <div class="terminal" style="flex:1;">
+          <div class="terminal-header">
+            <div class="term-dot r"></div>
+            <div class="term-dot y"></div>
+            <div class="term-dot g"></div>
+            <div class="terminal-title">full-activity-log.txt</div>
+          </div>
+          <div class="terminal-body" style="height:500px;" id="full-log">
+            <div class="log-line"><span class="log-dim">—</span><span class="log-info"> &nbsp;Log is empty. Run the updater to see activity here.</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── GUIDE ── -->
+      <div class="tab-panel" id="tab-guide">
+        <div class="page-title">CSV Format <span>Guide</span></div>
+        <div class="card">
+          <div class="card-title"><div class="card-title-icon">📋</div> Required Columns</div>
+          <table class="csv-table">
+            <thead>
+              <tr>
+                <th>Column</th><th>Description</th><th>Example</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="color:var(--accent2);">site_key</td><td style="color:var(--text2);">Must match your configured Site Key</td><td>site1</td></tr>
+              <tr><td style="color:var(--accent2);">post_id</td><td style="color:var(--text2);">WordPress post/page numeric ID</td><td>101</td></tr>
+              <tr><td style="color:var(--accent2);">post_type</td><td style="color:var(--text2);">post / page / product</td><td>post</td></tr>
+              <tr><td style="color:var(--accent2);">meta_title</td><td style="color:var(--text2);">New SEO title (50–60 chars recommended)</td><td>Best Laptops 2026</td></tr>
+              <tr><td style="color:var(--accent2);">meta_description</td><td style="color:var(--text2);">New meta description (150–160 chars)</td><td>Discover the best...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card">
+          <div class="card-title"><div class="card-title-icon">🔑</div> SEO Plugin Field Reference</div>
+          <table class="csv-table">
+            <thead><tr><th>Plugin</th><th>Title Field</th><th>Description Field</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><span class="plugin-pill pill-yoast">🟣 Yoast SEO</span></td>
+                <td style="color:var(--text2);">_yoast_wpseo_title</td>
+                <td style="color:var(--text2);">_yoast_wpseo_metadesc</td>
+              </tr>
+              <tr>
+                <td><span class="plugin-pill pill-rank">🟠 Rank Math</span></td>
+                <td style="color:var(--text2);">rank_math_title</td>
+                <td style="color:var(--text2);">rank_math_description</td>
+              </tr>
+              <tr>
+                <td><span class="plugin-pill pill-aioseo">🟢 All in One SEO</span></td>
+                <td style="color:var(--text2);">_aioseo_title</td>
+                <td style="color:var(--text2);">_aioseo_description</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card">
+          <div class="card-title"><div class="card-title-icon">📥</div> Sample CSV</div>
+          <div class="terminal">
+            <div class="terminal-header">
+              <div class="term-dot r"></div><div class="term-dot y"></div><div class="term-dot g"></div>
+              <div class="terminal-title">seo_updates.csv</div>
+            </div>
+            <div class="terminal-body" style="height:auto;">
+              <div class="log-line"><span class="log-info">site_key,post_id,post_type,meta_title,meta_description</span></div>
+              <div class="log-line"><span class="log-ok">site1,101,post,Best Laptops 2026 | Brand,Discover top-rated laptops of 2026 with expert reviews.</span></div>
+              <div class="log-line"><span class="log-ok">site1,102,page,About Us | Brand,Learn about our story and the team behind the brand.</span></div>
+              <div class="log-line"><span class="log-warn">site2,301,post,Top 10 SEO Tips 2026,Boost your rankings with these proven SEO strategies.</span></div>
+              <div class="log-line"><span class="log-warn">site3,401,post,Best Home Workouts,Effective home workouts with zero equipment needed.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app-wrapper -->
+
+<!-- NOTIFICATION -->
+<div class="notification" id="notification">
+  <span id="notif-icon">✓</span>
+  <span id="notif-msg">Done</span>
+</div>
+
+<script>
+// ── STATE ──
+let sites = [
+  { key: 'site1', url: 'https://myshop.com',    username: 'admin', app_password: '****', seo_plugin: 'yoast'    },
+  { key: 'site2', url: 'https://myblog.com',    username: 'admin', app_password: '****', seo_plugin: 'rankmath' },
+  { key: 'site3', url: 'https://myportfolio.com', username: 'admin', app_password: '****', seo_plugin: 'aioseo' },
+];
+
+let selectedPlugin = 'yoast';
+let editingIndex   = null;
+let fileData       = [];
+let running        = false;
+let stopRequested  = false;
+let allLogs        = [];
+let stats          = { total: 0, success: 0, failed: 0, skipped: 0 };
+
+// ── NAV ──
+function switchTab(id, el) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  if (el) el.classList.add('active');
+  if (id === 'dashboard') refreshDashboard();
+}
+
+// ── PLUGIN SELECTOR ──
+function selectPlugin(el, val) {
+  document.querySelectorAll('.plugin-option').forEach(o => {
+    o.classList.remove('selected','yoast','rank','aioseo');
+  });
+  el.classList.add('selected', val === 'rankmath' ? 'rank' : val);
+  selectedPlugin = val;
+  document.getElementById('f-plugin').value = val;
+}
+
+// ── FORM ──
+function clearForm() {
+  ['f-key','f-url','f-user','f-pass'].forEach(id => document.getElementById(id).value = '');
+  selectPlugin(document.querySelector('.plugin-option'), 'yoast');
+  editingIndex = null;
+  document.getElementById('form-title-label').textContent = 'Add New Site';
+  setFormStatus('','');
+}
+
+function setFormStatus(msg, type) {
+  const el = document.getElementById('form-status');
+  el.textContent = msg;
+  el.style.color = type === 'ok' ? 'var(--green)' : type === 'err' ? 'var(--red)' : 'var(--yellow)';
+}
+
+function saveSite() {
+  const key  = document.getElementById('f-key').value.trim();
+  const url  = document.getElementById('f-url').value.trim();
+  const user = document.getElementById('f-user').value.trim();
+  const pass = document.getElementById('f-pass').value.trim();
+  const plug = document.getElementById('f-plugin').value;
+
+  if (!key || !url || !user || !pass) { setFormStatus('⚠ All fields required','warn'); return; }
+  if (!url.startsWith('http'))        { setFormStatus('⚠ URL must start with https://','warn'); return; }
+
+  const site = { key, url, username: user, app_password: pass, seo_plugin: plug };
+
+  if (editingIndex !== null) {
+    sites[editingIndex] = site;
+    setFormStatus(`✓ Updated '${key}'`, 'ok');
+  } else {
+    if (sites.find(s => s.key === key)) { setFormStatus(`⚠ Key '${key}' already exists`,'warn'); return; }
+    sites.push(site);
+    setFormStatus(`✓ Site '${key}' added`, 'ok');
+  }
+
+  editingIndex = null;
+  document.getElementById('form-title-label').textContent = 'Add New Site';
+  renderSitesTable();
+  updateSitesCount();
+  notify(`Site '${key}' saved successfully`, 'success');
+}
+
+function editSite(idx) {
+  const s = sites[idx];
+  document.getElementById('f-key').value  = s.key;
+  document.getElementById('f-url').value  = s.url;
+  document.getElementById('f-user').value = s.username;
+  document.getElementById('f-pass').value = s.app_password;
+
+  const plugMap = { yoast: 0, rankmath: 1, aioseo: 2 };
+  const plugEls = document.querySelectorAll('.plugin-option');
+  plugEls.forEach((el,i) => {
+    el.classList.remove('selected','yoast','rank','aioseo');
+    if (i === plugMap[s.seo_plugin]) {
+      const cls = s.seo_plugin === 'rankmath' ? 'rank' : s.seo_plugin;
+      el.classList.add('selected', cls);
+    }
+  });
+  document.getElementById('f-plugin').value = s.seo_plugin;
+  selectedPlugin = s.seo_plugin;
+  editingIndex = idx;
+  document.getElementById('form-title-label').textContent = `Edit Site — ${s.key}`;
+  setFormStatus(`Editing '${s.key}'`, 'warn');
+  switchTab('sites', document.querySelectorAll('.nav-item')[1]);
+}
+
+function deleteSite(idx) {
+  if (!confirm(`Delete site '${sites[idx].key}'?`)) return;
+  sites.splice(idx, 1);
+  renderSitesTable();
+  updateSitesCount();
+  notify('Site deleted', 'info');
+}
+
+function testConnection() {
+  const url  = document.getElementById('f-url').value.trim();
+  const user = document.getElementById('f-user').value.trim();
+  const pass = document.getElementById('f-pass').value.trim();
+  if (!url || !user || !pass) { setFormStatus('⚠ Enter URL, username & password first','warn'); return; }
+
+  setFormStatus('⏳ Testing connection...','');
+
+  // Simulate test (in real app: calls WP REST API)
+  setTimeout(() => {
+    if (url.startsWith('https://') && user.length > 2) {
+      setFormStatus('✓ Connection successful — API is reachable','ok');
+      notify('Connection test passed!', 'success');
+    } else {
+      setFormStatus('✗ Connection failed — check your URL','err');
+    }
+  }, 1400);
+}
+
+// ── RENDER SITES ──
+const pluginLabels = { yoast: 'Yoast SEO', rankmath: 'Rank Math', aioseo: 'All in One SEO' };
+const pluginPills  = { yoast: 'pill-yoast', rankmath: 'pill-rank', aioseo: 'pill-aioseo' };
+const pluginIcons  = { yoast: '🟣', rankmath: '🟠', aioseo: '🟢' };
+
+function renderSitesTable() {
+  const tb = document.getElementById('sites-tbody');
+  if (!sites.length) {
+    tb.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="empty-state-icon">🌐</div><div class="empty-state-text">No sites yet.<br>Add your first WordPress site above.</div></div></td></tr>`;
+    return;
+  }
+  tb.innerHTML = sites.map((s,i) => `
+    <tr>
+      <td class="site-key-cell">${s.key}</td>
+      <td>${s.url}</td>
+      <td><span class="plugin-pill ${pluginPills[s.seo_plugin]}">${pluginIcons[s.seo_plugin]} ${pluginLabels[s.seo_plugin]}</span></td>
+      <td><span class="conn-dot"></span>Saved</td>
+      <td>
+        <div class="action-btns">
+          <button class="icon-btn test" title="Test" onclick="testSite(${i})">🔍</button>
+          <button class="icon-btn edit" title="Edit" onclick="editSite(${i})">✏️</button>
+          <button class="icon-btn del"  title="Delete" onclick="deleteSite(${i})">🗑</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function testSite(i) {
+  notify(`Testing connection to ${sites[i].key}...`, 'info');
+  setTimeout(() => notify(`${sites[i].key} — connection OK ✓`, 'success'), 1200);
+}
+
+function updateSitesCount() {
+  document.getElementById('sites-count').textContent = sites.length;
+  document.getElementById('stat-sites').textContent  = sites.length;
+}
+
+// ── FILE HANDLING ──
+function handleDrag(e) { e.preventDefault(); document.getElementById('file-drop').classList.add('dragover'); }
+function handleDragLeave() { document.getElementById('file-drop').classList.remove('dragover'); }
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('file-drop').classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) processFile(file);
+}
+
+function handleFile(input) {
+  if (input.files[0]) processFile(input.files[0]);
+}
+
+function processFile(file) {
+  const ext = file.name.split('.').pop().toLowerCase();
+  if (!['csv','xlsx','xls'].includes(ext)) { notify('Please select a .csv or .xlsx file', 'error'); return; }
+
+  document.getElementById('file-drop').style.display = 'none';
+  document.getElementById('file-selected').classList.add('show');
+  document.getElementById('file-name').textContent = file.name;
+  document.getElementById('file-size').textContent = (file.size / 1024).toFixed(1) + ' KB';
+
+  if (ext === 'csv') {
+    const reader = new FileReader();
+    reader.onload = e => parseCSV(e.target.result);
+    reader.readAsText(file);
+  } else {
+    // Excel: show placeholder preview
+    fileData = [
+      { site_key:'site1', post_id:'101', post_type:'post', meta_title:'Sample Title', meta_description:'Sample description here' },
+      { site_key:'site2', post_id:'205', post_type:'page', meta_title:'Another Title', meta_description:'Another description here' },
+    ];
+    renderCSVPreview(Object.keys(fileData[0]), fileData);
+    notify('Excel file loaded — preview shows sample data', 'info');
+  }
+}
+
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g,'').toLowerCase());
+  fileData = lines.slice(1).filter(l => l.trim()).map(l => {
+    const vals = l.split(',').map(v => v.trim().replace(/^"|"$/g,''));
+    const obj = {};
+    headers.forEach((h,i) => obj[h] = vals[i] || '');
+    return obj;
+  });
+  renderCSVPreview(headers, fileData);
+  notify(`CSV loaded — ${fileData.length} rows found`, 'success');
+}
+
+function renderCSVPreview(headers, data) {
+  const card = document.getElementById('csv-preview-card');
+  const thead = document.getElementById('csv-thead');
+  const tbody = document.getElementById('csv-tbody');
+  card.style.display = 'block';
+  thead.innerHTML = `<tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>`;
+  tbody.innerHTML = data.slice(0, 8).map(row =>
+    `<tr>${headers.map(h => `<td title="${row[h]||''}">${row[h]||'—'}</td>`).join('')}</tr>`
+  ).join('');
+  document.getElementById('run-total').textContent = data.length;
+}
+
+function clearFile() {
+  document.getElementById('file-drop').style.display = 'block';
+  document.getElementById('file-selected').classList.remove('show');
+  document.getElementById('csv-preview-card').style.display = 'none';
+  document.getElementById('file-input').value = '';
+  fileData = [];
+  resetRunStats();
+}
+
+// ── RUN ──
+function resetRunStats() {
+  ['run-total','run-ok','run-fail','run-skip'].forEach(id => document.getElementById(id).textContent = '0');
+  document.getElementById('progress-bar').style.width = '0%';
+  document.getElementById('prog-pct').textContent = '0%';
+  document.getElementById('prog-label').textContent = 'Ready to start';
+}
+
+function liveLog(msg, cls) {
+  const el = document.getElementById('live-log');
+  const now = new Date();
+  const t = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')}`;
+  const div = document.createElement('div');
+  div.className = 'log-line';
+  div.innerHTML = `<span class="log-time">${t}</span> <span class="${cls || 'log-dim'}">${msg}</span>`;
+  el.appendChild(div);
+  el.scrollTop = el.scrollHeight;
+  allLogs.push(`[${t}] ${msg}`);
+  appendFullLog(`[${t}] ${msg}`, cls);
+}
+
+function appendFullLog(msg, cls) {
+  const el = document.getElementById('full-log');
+  const div = document.createElement('div');
+  div.className = 'log-line';
+  div.innerHTML = `<span class="${cls || 'log-dim'}">${msg}</span>`;
+  el.appendChild(div);
+  el.scrollTop = el.scrollHeight;
+}
+
+async function startUpdate() {
+  if (!sites.length)    { notify('Add at least one site first', 'error'); return; }
+  if (!fileData.length) { notify('Select a CSV/Excel file first', 'error'); return; }
+
+  running = true; stopRequested = false;
+  document.getElementById('run-btn').style.display  = 'none';
+  document.getElementById('stop-btn').style.display = 'inline-flex';
+  document.getElementById('status-dot').classList.remove('idle');
+  document.getElementById('status-text').textContent = 'Running...';
+
+  let ok = 0, fail = 0, skip = 0;
+  const total = fileData.length;
+  document.getElementById('run-total').textContent = total;
+
+  liveLog(`Starting update — ${total} rows`, 'log-info');
+  liveLog('─'.repeat(44), 'log-dim');
+
+  const sitesMap = {};
+  sites.forEach(s => sitesMap[s.key] = s);
+
+  for (let i = 0; i < fileData.length; i++) {
+    if (stopRequested) { liveLog('⏹ Stopped by user', 'log-warn'); break; }
+
+    const row      = fileData[i];
+    const siteKey  = (row.site_key || '').trim();
+    const postId   = (row.post_id  || '').trim();
+    const pType    = (row.post_type || 'post').trim();
+    const title    = (row.meta_title || '').trim();
+    const desc     = (row.meta_description || '').trim();
+
+    const pct = Math.round(((i + 1) / total) * 100);
+    document.getElementById('progress-bar').style.width = pct + '%';
+    document.getElementById('prog-pct').textContent     = pct + '%';
+    document.getElementById('prog-label').textContent   = `Row ${i+1} of ${total}`;
+
+    if (!sitesMap[siteKey]) {
+      skip++;
+      document.getElementById('run-skip').textContent = skip;
+      liveLog(`[${i+1}/${total}] ⚠ Unknown site '${siteKey}' — skipped`, 'log-warn');
+    } else if (!/^\d+$/.test(postId)) {
+      skip++;
+      document.getElementById('run-skip').textContent = skip;
+      liveLog(`[${i+1}/${total}] ⚠ Invalid post_id '${postId}' — skipped`, 'log-warn');
+    } else {
+      // Simulate API call
+      await new Promise(r => setTimeout(r, 350 + Math.random() * 300));
+      const success = Math.random() > 0.1; // 90% success rate for demo
+      if (success) {
+        ok++;
+        document.getElementById('run-ok').textContent = ok;
+        liveLog(`[${i+1}/${total}] ✓ ${siteKey} / post ${postId} — updated (${pluginLabels[sitesMap[siteKey].seo_plugin]})`, 'log-ok');
+      } else {
+        fail++;
+        document.getElementById('run-fail').textContent = fail;
+        liveLog(`[${i+1}/${total}] ✗ ${siteKey} / post ${postId} — HTTP 401 Auth failed`, 'log-err');
+      }
+    }
+  }
+
+  liveLog('─'.repeat(44), 'log-dim');
+  liveLog(`✅ Done — ✓ ${ok} success, ✗ ${fail} failed, ⚠ ${skip} skipped`, 'log-info');
+
+  stats.total   += total;
+  stats.success += ok;
+  stats.failed  += fail;
+  stats.skipped += skip;
+  document.getElementById('stat-total').textContent   = stats.total;
+  document.getElementById('stat-success').textContent = stats.success;
+  document.getElementById('stat-failed').textContent  = stats.failed;
+
+  running = false;
+  document.getElementById('run-btn').style.display  = 'inline-flex';
+  document.getElementById('stop-btn').style.display = 'none';
+  document.getElementById('status-dot').classList.add('idle');
+  document.getElementById('status-text').textContent = 'Idle';
+
+  notify(`Update complete: ${ok} success, ${fail} failed`, ok > fail ? 'success' : 'error');
+}
+
+function stopUpdate() {
+  stopRequested = true;
+  document.getElementById('run-btn').style.display  = 'inline-flex';
+  document.getElementById('stop-btn').style.display = 'none';
+  document.getElementById('status-dot').classList.add('idle');
+  document.getElementById('status-text').textContent = 'Idle';
+}
+
+// ── DASHBOARD ──
+function refreshDashboard() {
+  const tb = document.getElementById('dashboard-tbody');
+  if (!sites.length) {
+    tb.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="empty-state-icon">🌐</div><div class="empty-state-text">No sites added yet.</div></div></td></tr>`;
+    return;
+  }
+  tb.innerHTML = sites.map(s => `
+    <tr>
+      <td class="site-key-cell">${s.key}</td>
+      <td>${s.url}</td>
+      <td><span class="plugin-pill ${pluginPills[s.seo_plugin]}">${pluginIcons[s.seo_plugin]} ${pluginLabels[s.seo_plugin]}</span></td>
+      <td><span class="conn-dot"></span>Connected</td>
+      <td style="color:var(--text3);">Just now</td>
+    </tr>
+  `).join('');
+}
+
+// ── LOG UTILS ──
+function saveLog() {
+  if (!allLogs.length) { notify('No logs to save', 'info'); return; }
+  const blob = new Blob([allLogs.join('\n')], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `seo-log-${Date.now()}.txt`;
+  a.click();
+  notify('Log saved!', 'success');
+}
+
+function clearLog() {
+  allLogs = [];
+  document.getElementById('full-log').innerHTML = '<div class="log-line"><span class="log-dim">— Log cleared</span></div>';
+  notify('Log cleared', 'info');
+}
+
+// ── NOTIFY ──
+let notifTimer;
+function notify(msg, type) {
+  const el = document.getElementById('notification');
+  const icons = { success:'✓', error:'✗', info:'ℹ' };
+  document.getElementById('notif-icon').textContent = icons[type] || '•';
+  document.getElementById('notif-msg').textContent  = msg;
+  el.className = `notification ${type} show`;
+  clearTimeout(notifTimer);
+  notifTimer = setTimeout(() => el.classList.remove('show'), 3200);
+}
+
+// ── INIT ──
+renderSitesTable();
+refreshDashboard();
+updateSitesCount();
+</script>
+</body>
+</html>
